@@ -1,0 +1,5 @@
+.ant-menu-sub.ant-menu-inline {
+    height: calc(100vh - 180px);
+    overflow-y: auto;
+    overflow-x: clip;
+}
