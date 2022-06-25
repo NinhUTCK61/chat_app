@@ -31,7 +31,12 @@ export default function ModalAddRoom() {
         form.resetFields()
     }
   return (
-    <Modal visible={visible} title="Add room" onOk={handleOk} onCancel={handleCancel} okText="Add">
+    <Modal visible={visible} 
+        title="Add room" 
+        onOk={handleOk} 
+        onCancel={handleCancel} 
+        okText="Add"
+    >
         <Form form={form} layout='vertical'>
             <Form.Item 
                 label="Room name:" 

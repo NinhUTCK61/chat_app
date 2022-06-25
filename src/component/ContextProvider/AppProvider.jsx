@@ -60,7 +60,7 @@ export default function AppProvider({children}) {
     const userMention = userInRoom.map((user)=>{
       return({id:`${user.uid}`,display: `${user.displayName}`, avartar: `${user.avartar}`})
     })
-    console.log(usersList)
+
   return (
     <AppContext.Provider value={{visible, 
         setVisible, roomItem, 

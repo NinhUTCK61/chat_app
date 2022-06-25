@@ -134,17 +134,19 @@ export default function InviteModal() {
             </Swiper>
         </div>
        
-        <Form form={form} layout='vertical' name='selectorUser'>
-            <DeboutSelect
-                mode="multiple"
-                opt="Member's name: "
-                value={value}
-                placeholder = "Enter member's name..."
-                fetchOption={fetchUserList}
-                onChange={newValue => setValue(newValue)}
-                style={{width: "100%"}}
-                currentmembers={selectionRoom.members}
-            />
+        <Form form={form} layout='vertical'>
+            <Form.Item name='selectorUser'>
+                <DeboutSelect
+                    mode="multiple"
+                    opt="Member's name: "
+                    value={value}
+                    placeholder = "Enter member's name..."
+                    fetchOption={fetchUserList}
+                    onChange={newValue => setValue(newValue)}
+                    style={{width: "100%"}}
+                    currentmembers={selectionRoom.members}
+                />
+            </Form.Item>
         </Form>
     </Modal>
   )

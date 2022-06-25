@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useRef } from 'react'
+import React, { useContext, useMemo, useRef, useEffect } from 'react'
 import { Avatar, Tooltip,  Button, Typography,  Popover, Alert, Form, Mentions, Dropdown, Menu, Badge } from 'antd'
 import { UserAddOutlined, LogoutOutlined, SendOutlined,  BellOutlined, NotificationFilled,  MoreOutlined } from '@ant-design/icons';
 import { auth, db } from '../../firebase/firebaseConfig';
@@ -10,7 +10,6 @@ import { useForm } from 'antd/lib/form/Form';
 import { useState } from 'react';
 import { formatRelative } from 'date-fns/esm';
 import "../../scss/chatRoom.css"
-import Iframe from 'react-iframe';
 
 export default function ChatWindow() {
   const {user} = useContext(AuthContext)
@@ -32,10 +31,6 @@ export default function ChatWindow() {
   
   const [firtTime, setFirtTime] = useState(true)
   const [visible, setVisible] = useState(false);
-
-  const hide = () => {
-    setVisible(false);
-  };
 
   const handleVisibleChange = (newVisible) => {
     setVisible(newVisible);
@@ -79,6 +74,7 @@ export default function ChatWindow() {
         createdAt: serverTimestamp()
       })
       setInputValue("")
+      setFirtTime(true)
       form.resetFields(["messages"])
     }
   }
@@ -125,20 +121,36 @@ export default function ChatWindow() {
     return formattedDate
   }
 
-  const elementMessages = useRef()
+  const elementMessagesRef = useRef()
   
   const [selectionIdMention, setSelectionIdMention] = useState('')
   const handleEnterMessagesMention = async(e)=>{
     setSelectionId(e.roomId)
     setSelectionIdMention(e.id)
+    setFirtTime(false)
     await updateDoc(doc(db,"messages", e.id), {
       mention: arrayRemove(user.uid)
     })
+    
   }
-  
+  console.log(elementMessagesRef.current)
+  console.log(firtTime)
+  console.log(messages.length)
+  useEffect(()=>{
+    if(elementMessagesRef.current && firtTime)
+    {
+      elementMessagesRef.current.scrollTop = elementMessagesRef.current.scrollHeight;
+      setFirtTime(true)
+      console.log("DMMMMMMMMMMMMMMMMMMMMMMMMM")
+    } 
+    return
+  }
+  ,[messages.length, firtTime])
+
   const handleDeleteMessages = async(e)=>{
     await deleteDoc(doc(db, "messages", e.id));
   }
+
   return (
     <div>
         <header style={{height: "74px", 
@@ -237,7 +249,7 @@ export default function ChatWindow() {
                 justifyContent: "flex-end"}}
               >
                 <div style={{overflowY:"auto", maxHeight:"100%", textAlign:"end"}}
-                  ref={elementMessages}
+                  ref={elementMessagesRef}
                 >
                     {
                       messages?.map((message,index)=>{
@@ -281,7 +293,6 @@ export default function ChatWindow() {
                             key={index}
                             style={ styleContainerMessage}
                             ref={el => {
-                              // el can be null - see https://reactjs.org/docs/refs-and-the-dom.html#caveats-with-callback-refs
                               if (!el) return;
                               if(messagesMentionId.includes(message.id))
                               {

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import {Button, Menu} from "antd"
 import { AppContext } from '../ContextProvider/AppProvider';
-import "../../scss/sidebar.css"
+
 function getItem(label, key, icon, children, type) {
     return {
       key,
