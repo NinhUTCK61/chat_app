@@ -29,7 +29,7 @@ export default function ChatWindow() {
     </div>
   );
   
-  const [firtTime, setFirtTime] = useState(true)
+
   const [visible, setVisible] = useState(false);
 
   const handleVisibleChange = (newVisible) => {
@@ -77,6 +77,7 @@ export default function ChatWindow() {
       setFirtTime(true)
       form.resetFields(["messages"])
     }
+    setFirtTime(true)
   }
    
   const conditionMessages = useMemo(()=>{
@@ -120,10 +121,14 @@ export default function ChatWindow() {
   const elementMessagesRef = useRef()
   
   const [selectionIdMention, setSelectionIdMention] = useState('')
+  const [element, setElement] = useState()
+  const [firtTime, setFirtTime] = useState(true)
+
   const handleEnterMessagesMention = async(e)=>{
     setSelectionId(e.roomId)
     setSelectionIdMention(e.id)
     setFirtTime(false)
+    
     await updateDoc(doc(db,"messages", e.id), {
       mention: arrayRemove(user.uid)
     })
@@ -131,14 +136,21 @@ export default function ChatWindow() {
   }
 
   useEffect(()=>{
-    if(elementMessagesRef.current && firtTime)
-    {
-      elementMessagesRef.current.scrollTop = elementMessagesRef.current.scrollHeight;
-      setFirtTime(true)
-    } 
+    if(firtTime)
+    { 
+      if(elementMessagesRef.current)
+      {
+        elementMessagesRef.current.scrollTop = elementMessagesRef.current.scrollHeight - elementMessagesRef.current.clientHeight;
+      }
+    } else{
+      if(element)
+      {
+        element.scrollIntoView()
+      }
+    }
     return
   }
-  ,[messages.length, firtTime])
+  ,[messages.length, firtTime, element])
 
   const handleDeleteMessages = async(e)=>{
     await deleteDoc(doc(db, "messages", e.id));
@@ -156,6 +168,7 @@ export default function ChatWindow() {
         >   
             
             <Dropdown 
+              placement="bottomLeft" arrow
               overlay={
                 <Menu
                   items={messagesMentionUser.map((item, index)=>{
@@ -164,17 +177,18 @@ export default function ChatWindow() {
                         key: index,
                         label: (
                           <Typography.Link onClick={()=>{handleEnterMessagesMention({id: item.id,roomId: item.roomId });}}>
-                            <div style={{display:"flex", justifyContent: "space-between", alignItems:"center", width:"250px", paddingBottom:"4px"}}>
-                              <span style={{fontSize:"16px", fontWeight:"bold", color:"#000"}}>
+                            <div style={{display:"flex", justifyContent: "space-between", alignItems:"center", paddingBottom:"4px"}}>
+                              <span style={{fontSize:"16px", fontWeight:"bold", color:"#000", width:"174px", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis"}}>
                                 {item.name}
                               </span> 
-                              <span style={{fontSize:"12px", color:"#ccc"}}>
+                              <span style={{fontSize:"12px", color:"#ccc", paddingTop:"2px"}}>
                                 {formatDate(item.createdAt.seconds)}
                               </span>
                             </div>
-                            <div style={{paddingLeft:"8px"}}>
+                            <div style={{paddingLeft:"8px", display:"flex", alignItems:"center"}}>
                               <NotificationFilled style={{color:"#ffe000"}}/>
-                              <span style={{paddingLeft:"4px", color:"#000", whiteSpace:"nowrap", textOverflow:"ellipsis"}}>
+                              <span style={{padding:"0px 2px 0 4px"}}>{item.displayName}:</span>
+                              <span style={{paddingLeft:"4px", color:"#000", whiteSpace:"nowrap", textOverflow:"ellipsis", width:"208px", overflow:"hidden", display:"inline-block"}}>
                                 {item.text}
                               </span>
                             </div>
@@ -185,7 +199,6 @@ export default function ChatWindow() {
                   })}
                 />
               } 
-              placement="bottom" 
             >
               <Badge  count={messagesMentionUser.length} overflowCount={10}>
                 <Avatar style={{background:"#1890ff", color:"#fff"}} shape="square" size="middle" icon={<BellOutlined />}/>
@@ -214,7 +227,7 @@ export default function ChatWindow() {
                     visible={visible}
                     onVisibleChange={handleVisibleChange}
                   >
-                    <Button style={{fontWeight: "bold"}}>{selectionRoom.name} <LogoutOutlined /></Button>
+                    <Button style={{fontWeight: "bold", border:"1px solid #359eff", color:"#359eff"}}>{selectionRoom.name} <LogoutOutlined /></Button>
                   </Popover>
                   
                   <div style={{display: "flex", alignItems: "center"}}>
@@ -291,7 +304,8 @@ export default function ChatWindow() {
                               {
                                 if(selectionIdMention === message.id)
                                 { 
-                                  el.scrollIntoView(true)
+                                  // el.scrollIntoView(true)
+                                  setElement(el)
                                 }
                               }
                             }}
@@ -309,7 +323,6 @@ export default function ChatWindow() {
                                   padding:"8px",
                                   margin:`${marginMessageUser}`,
                                   color:`${colorMessage}`,
-                                  maxWidth:"300px",
                                   textAlign: textAlign
                                   }}
                                 >

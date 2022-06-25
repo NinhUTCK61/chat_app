@@ -16,6 +16,7 @@
   }
 
 .ant-dropdown-menu {
+  min-width: 316px;
   max-height: 242px;
   overflow-y: auto;
 }
