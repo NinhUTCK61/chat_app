@@ -79,10 +79,6 @@ export default function ChatWindow() {
     }
   }
    
-  const handleSelect = (Option)=>{
-    console.log("Option: ",Option)
-  }
-   
   const conditionMessages = useMemo(()=>{
     return{
       fielName: "roomId",
@@ -133,15 +129,12 @@ export default function ChatWindow() {
     })
     
   }
-  console.log(elementMessagesRef.current)
-  console.log(firtTime)
-  console.log(messages.length)
+
   useEffect(()=>{
     if(elementMessagesRef.current && firtTime)
     {
       elementMessagesRef.current.scrollTop = elementMessagesRef.current.scrollHeight;
       setFirtTime(true)
-      console.log("DMMMMMMMMMMMMMMMMMMMMMMMMM")
     } 
     return
   }
@@ -344,7 +337,6 @@ export default function ChatWindow() {
                       style={{border: "none", fontSize: "16px"}}
                       onPressEnter={e=>handleOnsubmit(e)}
                       onChange={(e)=>handleInputChange(e)}
-                      onSelect={handleSelect}
                       autoFocus={true}
                       value={inputValue}
                       autoSize={{maxRows: 1}}

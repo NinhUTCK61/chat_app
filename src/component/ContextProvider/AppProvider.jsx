@@ -23,8 +23,7 @@ export default function AppProvider({children}) {
     },[uid]) 
     
     const roomItem =  useFirestore("rooms", condition)
-    console.log("room: ", roomItem)
-    
+
     const selectionRoom = roomItem.find((item)=> selectionId === item.id) || {}
     
     const userCondition = useMemo(()=>{
