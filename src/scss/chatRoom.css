@@ -20,3 +20,7 @@
   max-height: 242px;
   overflow-y: auto;
 }
+
+.visibleSeen {
+  display: none;
+}

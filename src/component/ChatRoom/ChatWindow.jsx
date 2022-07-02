@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useRef, useEffect } from 'react'
-import { Avatar, Tooltip,  Button, Typography,  Popover, Alert, Form, Mentions, Dropdown, Menu, Badge } from 'antd'
-import { UserAddOutlined, LogoutOutlined, SendOutlined,  BellOutlined, NotificationFilled,  MoreOutlined } from '@ant-design/icons';
+import { Avatar, Tooltip,  Button, Typography,  Popover, Alert, Form, Mentions, Dropdown, Menu, Badge,Empty, Image } from 'antd'
+import { UserAddOutlined, LogoutOutlined, SendOutlined,  BellOutlined, NotificationFilled,  MoreOutlined, CloseOutlined } from '@ant-design/icons';
 import { auth, db } from '../../firebase/firebaseConfig';
 import { AuthContext } from '../ContextProvider/AuthProvider';
 import { AppContext } from '../ContextProvider/AppProvider';
@@ -10,6 +10,8 @@ import { useForm } from 'antd/lib/form/Form';
 import { useState } from 'react';
 import { formatRelative } from 'date-fns/esm';
 import "../../scss/chatRoom.css"
+import { BsFillCircleFill } from "react-icons/bs";
+import UploadImage from './UploadImage';
 
 export default function ChatWindow() {
   const {user} = useContext(AuthContext)
@@ -47,7 +49,6 @@ export default function ChatWindow() {
   const [form] = useForm()
 
   const [inputValue, setInputValue] = useState('')
-
   const handleInputChange = (e)=>{
     setInputValue(e)
   }
@@ -58,10 +59,31 @@ export default function ChatWindow() {
   .map((user)=>{
     return user.uid
   })
+  
+  const elementMessagesRef = useRef()
+  const {imageObj, setImageObj, setVisibleImage} = useContext(AppContext)
 
   const handleOnsubmit = async(e)=>{
+    let fileData;
+    if (imageObj?.file.status !== 'uploading' && imageObj) {
+      console.log(imageObj)
+      let data = new FormData()
+      data.append("file", imageObj.fileList[0]?.originFileObj)
+      data.append("cloud_name", "chatapp823")
+      data.append("upload_preset", "messagesImage")
+
+      const res = await fetch("https://api.cloudinary.com/v1_1/chatapp823/image/upload",{
+        method: 'POST',
+        body: data
+      })
+      fileData = await res.json()
+    }else{
+      fileData = null
+    }
+
     const [{...userHost}] = userRoot;
-    if(inputValue.trim() !== "")
+
+    if(inputValue.trim() !== "" || imageObj)
     {
       await addDoc(collection(db, "messages"),{
         text: inputValue,
@@ -71,13 +93,17 @@ export default function ChatWindow() {
         displayName: userHost.displayName,
         mention: mentionIdUser,
         avartar: userRoot[0].avartar,
-        createdAt: serverTimestamp()
+        image: imageObj ? (fileData.url):(null),
+        checked: false,
+        createdAt: serverTimestamp(),
       })
       setInputValue("")
       setFirtTime(true)
       form.resetFields(["messages"])
     }
     setFirtTime(true)
+    setImageObj(null)
+    setVisibleImage(false)
   }
    
   const conditionMessages = useMemo(()=>{
@@ -117,23 +143,36 @@ export default function ChatWindow() {
     }
     return formattedDate
   }
-
-  const elementMessagesRef = useRef()
   
   const [selectionIdMention, setSelectionIdMention] = useState('')
   const [element, setElement] = useState()
   const [firtTime, setFirtTime] = useState(true)
+  const [visibleDropDown, setVisibleDropDown] = useState(false)
 
-  const handleEnterMessagesMention = async(e)=>{
+  const countNotification =  messagesMentionUser.filter((notify)=>{
+      return notify.checked === false
+  })
+
+  const handleEnterNotificationMention = async(e)=>{
     setSelectionId(e.roomId)
     setSelectionIdMention(e.id)
     setFirtTime(false)
-    
+    setVisibleDropDown(false)
+    await updateDoc(doc(db,"messages", e.id), {
+      checked: true
+    })
+  }
+
+  const handleDeletedMessagesMention = async(e)=>{
     await updateDoc(doc(db,"messages", e.id), {
       mention: arrayRemove(user.uid)
     })
-    
+    setVisibleDropDown(true)
   }
+  
+  const handleVisibleDropDown = (flag) => {
+    setVisibleDropDown(flag);
+  };
 
   useEffect(()=>{
     if(firtTime)
@@ -144,16 +183,33 @@ export default function ChatWindow() {
       }
     } else{
       if(element)
-      {
-        element.scrollIntoView()
+      { 
+        element.scrollIntoView(true)
       }
     }
-    return
-  }
-  ,[messages.length, firtTime, element])
+  },[messages.length, firtTime, element]
+  )
 
   const handleDeleteMessages = async(e)=>{
-    await deleteDoc(doc(db, "messages", e.id));
+    if(e.image === null)
+    {
+      await deleteDoc(doc(db, "messages", e.id));
+    }else{
+      await updateDoc(doc(db, "messages", e.id),{
+        text: ''
+      })
+    }
+  }
+  
+  const handleDeleteMessagesImage = async(e)=>{
+    if(e.text.trim() === "")
+    {
+      await deleteDoc(doc(db, "messages", e.id));
+    }else{
+      await updateDoc(doc(db, "messages", e.id),{
+        image: null
+      })
+    }
   }
 
   return (
@@ -168,40 +224,70 @@ export default function ChatWindow() {
         >   
             
             <Dropdown 
+              onVisibleChange={handleVisibleDropDown}
+              trigger={['click']}
+              visible={visibleDropDown}
               placement="bottomLeft" arrow
               overlay={
                 <Menu
-                  items={messagesMentionUser.map((item, index)=>{
-                    return(
-                      {
-                        key: index,
-                        label: (
-                          <Typography.Link onClick={()=>{handleEnterMessagesMention({id: item.id,roomId: item.roomId });}}>
-                            <div style={{display:"flex", justifyContent: "space-between", alignItems:"center", paddingBottom:"4px"}}>
-                              <span style={{fontSize:"16px", fontWeight:"bold", color:"#000", width:"174px", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis"}}>
-                                {item.name}
-                              </span> 
-                              <span style={{fontSize:"12px", color:"#ccc", paddingTop:"2px"}}>
-                                {formatDate(item.createdAt.seconds)}
-                              </span>
-                            </div>
-                            <div style={{paddingLeft:"8px", display:"flex", alignItems:"center"}}>
-                              <NotificationFilled style={{color:"#ffe000"}}/>
-                              <span style={{padding:"0px 2px 0 4px"}}>{item.displayName}:</span>
-                              <span style={{paddingLeft:"4px", color:"#000", whiteSpace:"nowrap", textOverflow:"ellipsis", width:"208px", overflow:"hidden", display:"inline-block"}}>
-                                {item.text}
-                              </span>
-                            </div>
-                          </Typography.Link>
-                        ),
-                      }
+                  items={
+                    (messagesMentionUser.length === 0) ? ([{label:<Empty />}]) :
+                    ( 
+                      messagesMentionUser.map((item, index)=>{
+                          return(
+                            {
+                              key: index,
+                              label: (
+                                <div>
+                                  <div 
+                                    style={{display:"flex", flexDirection:"row-reverse", fontSize:"12px", color:"#ccc"}}
+                                  >
+                                    <CloseOutlined onClick={()=>handleDeletedMessagesMention({id: item.id,roomId: item.roomId })}/>
+                                  </div>
+                                  <Typography.Link>
+                                      <div onClick={()=>{handleEnterNotificationMention({id: item.id,roomId: item.roomId });}}>
+                                        <div style={{display:"flex", justifyContent: "space-between", alignItems:"center", paddingBottom:"4px"}}>
+                                          <div style={{display:"flex", alignItems:"center"}}>
+                                            <span style={{width:"16px"}}>
+                                              { 
+                                                
+                                                item.checked ? (null) : (
+                                                  <BsFillCircleFill 
+                                                    style={{fontSize:"9px", padding: "4px 2px 0 0", width:"12px"}}
+                                                  />
+                                                )
+                                              }
+                                            </span>
+                                            <span style={{fontSize:"16px", fontWeight:"bold", color:"#000", width:"174px", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis"}}>
+                                              {item.name}
+                                            </span> 
+                                          </div>
+                                          <span style={{fontSize:"12px", color:"#ccc", paddingTop:"2px"}}>
+                                            {formatDate(item.createdAt.seconds)}
+                                          </span>
+                                        </div>
+                                        <div style={{paddingLeft:"8px", display:"flex", alignItems:"center"}}>
+                                          <NotificationFilled style={{color:"#ffe000"}}/>
+                                          <span style={{padding:"0px 2px 0 4px"}}>{item.displayName}:</span>
+                                          <span style={{paddingLeft:"4px", color:"#000", whiteSpace:"nowrap", textOverflow:"ellipsis", width:"208px", overflow:"hidden", display:"inline-block"}}>
+                                            {item.text}
+                                          </span>
+                                        </div>
+                                      </div>
+                                
+                                  </Typography.Link>
+                                </div>
+                              ),
+                            }
+                          )
+                        }
                     )
-                  })}
+                  )}
                 />
               } 
             >
-              <Badge  count={messagesMentionUser.length} overflowCount={10}>
-                <Avatar style={{background:"#1890ff", color:"#fff"}} shape="square" size="middle" icon={<BellOutlined />}/>
+              <Badge  count={countNotification.length} overflowCount={10} onClick={()=>setVisibleDropDown(true)}>
+                <Avatar style={{background:"#1890ff", color:"#fff", cursor:"pointer"}} shape="square" size="middle" icon={<BellOutlined />}/>
               </Badge>
             </Dropdown>
 
@@ -259,11 +345,11 @@ export default function ChatWindow() {
                 >
                     {
                       messages?.map((message,index)=>{
-                        let styleContainerMessage ={marginRight:"12px"}
+                        let styleContainerMessage ={marginRight:"12px", marginBottom:"20px"}
                         let styleBannerMessage = {}
                         let backgroundMessage = "#359eff"
                         let colorMessage = "#fff"
-                        let marginMessageUser = "4px 6px 10px 0" 
+                        let marginMessageUser = "4px 6px 0px 0" 
                         let textAlign = ""
                         let taskMessagesCss = {}
                         if(user.uid === message.uid)
@@ -289,7 +375,7 @@ export default function ChatWindow() {
                           }
                           backgroundMessage = "#fff"
                           colorMessage="#000"
-                          marginMessageUser = "4px 0px 10px 6px"
+                          marginMessageUser = "4px 0px 20px 6px"
                           textAlign = "start"
 
                           taskMessagesCss = {display:"flex", alignItems:"center"}
@@ -315,25 +401,42 @@ export default function ChatWindow() {
                                 <span style={{fontSize: "17px", fontWeight: "bold", padding:"0px 4px"}}>{message.displayName}</span>
                                 <span style={{padding: "2px 8px 0px", fontSize:"13px", color:"#948f88"}}>{formatDate(message?.createdAt?.seconds)}</span>
                               </div>
-                              <div style={taskMessagesCss}>
-                                <Typography.Paragraph style={{border: "1px solid #ccc", 
-                                  display: "inline-block", 
-                                  borderRadius:"10px",
-                                  backgroundColor:`${backgroundMessage}`,
-                                  padding:"8px",
-                                  margin:`${marginMessageUser}`,
-                                  color:`${colorMessage}`,
-                                  textAlign: textAlign
-                                  }}
-                                >
-                                  {message.text}
-                                </Typography.Paragraph>
-                                {
-                                  user.uid.includes(message.uid)&&(<Popover content={(<Typography.Link style={{color:"red"}} onClick={()=>handleDeleteMessages(message)}>Delete</Typography.Link>)}>
+                              {
+                                message.image && (<div style={taskMessagesCss}>     
+                                  <div style={ {margin:"4px 6px 0px 6px"}}>
+                                    <Image src={message.image} width={200} height={150} style={{borderRadius:"10px"}}/>
+                                  </div>
+                                  
+                                  {
+                                    (user.uid.includes(message.uid)&&(<Popover content={(<Typography.Link style={{color:"red"}} onClick={()=>handleDeleteMessagesImage(message)}>Delete</Typography.Link>)}>
                                     <MoreOutlined style={{color:"#ccc", cursor:"pointer"}}/>
-                                  </Popover>)
-                                }
-                              </div>
+                                    </Popover>))
+                                  }
+                                </div>)
+                              }
+                              {
+                           
+                                message.text.trim() !=="" && (<div style={taskMessagesCss}>
+                                      <Typography.Paragraph style={{border: "1px solid #ccc", 
+                                        display: "inline-block", 
+                                        borderRadius:"10px",
+                                        backgroundColor:`${backgroundMessage}`,
+                                        padding:"8px",
+                                        margin:`${marginMessageUser}`,
+                                        color:`${colorMessage}`,
+                                        textAlign: textAlign
+                                        }}
+                                      >
+                                        {message.text}
+                                      </Typography.Paragraph>
+                                    
+                                    {
+                                      user.uid.includes(message.uid)&&(<Popover content={(<Typography.Link style={{color:"red"}} onClick={()=>handleDeleteMessages(message)}>Delete</Typography.Link>)}>
+                                        <MoreOutlined style={{color:"#ccc", cursor:"pointer"}}/>
+                                      </Popover>)
+                                    }
+                                  </div>)
+                              }
                           </div> 
                         )
                       })
@@ -373,8 +476,8 @@ export default function ChatWindow() {
                       }
                     </Mentions>
                   </Form.Item>
-                  
-                  <SendOutlined style={{color: "#1890ff", padding: "0px 6px 0 12px", fontSize:"26px"}} onClick={handleOnsubmit}/>
+                  <UploadImage/>
+                  <SendOutlined style={{color: "#1890ff", padding: "0px 16px 0 12px", fontSize:"26px"}} onClick={handleOnsubmit}/>
                 </Form>
               </div>
           </div>

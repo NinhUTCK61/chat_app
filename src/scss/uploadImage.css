@@ -1,0 +1,26 @@
+.ant-popover-placement-topRight .ant-popover-arrow{
+    display: none;
+}
+
+.ant-upload.ant-upload-select-picture-card{
+    width: auto;
+    height: auto;
+    border: none;
+    background-color: #fff;
+    margin: 0px;
+}
+.displayImage{
+    position: relative;
+}
+
+.closeImage{
+    position: absolute;
+    z-index: 100;
+    top: 6px;
+    right: 6px;
+    color: #ccc;
+}
+
+.ant-image-mask{
+    border-radius: 10px;
+}

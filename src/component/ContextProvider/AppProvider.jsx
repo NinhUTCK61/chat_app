@@ -59,7 +59,10 @@ export default function AppProvider({children}) {
     const userMention = userInRoom.map((user)=>{
       return({id:`${user.uid}`,display: `${user.displayName}`, avartar: `${user.avartar}`})
     })
-
+    
+    // UploadImage
+    const [imageObj, setImageObj] = useState();
+    const [visibleImage, setVisibleImage] = useState(false);
   return (
     <AppContext.Provider value={{visible, 
         setVisible, roomItem, 
@@ -69,7 +72,11 @@ export default function AppProvider({children}) {
         isInviteMemberVisible,
         setIsInviteMemberVisible,
         usersList,
-        userMention
+        userMention,
+        imageObj, 
+        setImageObj,
+        visibleImage, 
+        setVisibleImage
       }}
     >
         {children}
