@@ -115,7 +115,7 @@ export default function InviteModal() {
                     clickable: true,
                 }}
                 modules={[FreeMode, Pagination]}
-                style={{margin:"12px 0"}}
+                style={{margin:"12px 0", height: "90px"}}
             >
                 {
                     usersList.filter((user)=>!selectionRoom.members?.includes(user.uid))?.map((user)=>{

@@ -367,6 +367,7 @@ export default function ChatWindow() {
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "flex-start",
+                            marginBottom:"20px"
                           }
 
                           styleBannerMessage={
@@ -375,7 +376,7 @@ export default function ChatWindow() {
                           }
                           backgroundMessage = "#fff"
                           colorMessage="#000"
-                          marginMessageUser = "4px 0px 20px 6px"
+                          marginMessageUser = "4px 0px 0px 6px"
                           textAlign = "start"
 
                           taskMessagesCss = {display:"flex", alignItems:"center"}
