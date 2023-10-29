@@ -1,21 +1,23 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import { BrowserRouter } from 'react-router-dom';
-import AuthProvider from './component/ContextProvider/AuthProvider';
-import AppProvider from './component/ContextProvider/AppProvider';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import { BrowserRouter } from "react-router-dom";
+import { AppProvider, AuthProvider } from "./component/ContextProvider";
+import { ChatProvider } from "./component/ContextProvider/ChatProvider";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-    <BrowserRouter>
-      <AuthProvider>
-        <AppProvider>
+  <BrowserRouter>
+    <AuthProvider>
+      <AppProvider>
+        <ChatProvider>
           <App />
-        </AppProvider>
-      </AuthProvider>
-    </BrowserRouter>
+        </ChatProvider>
+      </AppProvider>
+    </AuthProvider>
+  </BrowserRouter>
 );
 
 // If you want to start measuring performance in your app, pass a function

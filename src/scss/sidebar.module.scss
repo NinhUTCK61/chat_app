@@ -1,0 +1,29 @@
+.sidebar {
+  border-right: 1px solid #ccc;
+  height: 100vh;
+  text-align: center;
+
+  .sidebarHeader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 0 16px;
+    border-bottom: 1px solid #ccc;
+    height: 74px;
+    & img {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  .sidebarMenu {
+    background-color: #fff;
+    width: 100%;
+    border: none;
+  }
+
+  .buttonAddRoom {
+    margin-top: 12px;
+    width: 90%;
+  }
+}

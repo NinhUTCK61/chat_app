@@ -1,0 +1,30 @@
+.menuNotify {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 250px;
+  padding-bottom: 4px;
+
+  .textName {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+  }
+
+  .textTime {
+    font-size: 12px;
+    color: #948f88;
+  }
+
+  .textMessage {
+    padding-left: 4px;
+    color: #000;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+.avatar {
+  background: #1890ff !important;
+  color: #fff !important;
+}

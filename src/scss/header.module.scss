@@ -1,0 +1,14 @@
+.header {
+  height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ccc;
+  padding: 0px 28px;
+}
+
+.avatar {
+  margin-right: 4px;
+  box-shadow: 1px 1px 15px #ccc;
+  cursor: pointer;
+}

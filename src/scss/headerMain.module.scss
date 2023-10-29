@@ -1,0 +1,22 @@
+.header {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ccc;
+  padding: 0px 28px;
+
+  .outRoom {
+    border: 1px solid red;
+    color: red;
+
+    .button {
+      font-weight: "bold";
+    }
+  }
+
+  .invite {
+    display: flex;
+    align-items: center;
+  }
+}
